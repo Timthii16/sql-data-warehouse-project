@@ -1,0 +1,31 @@
+SELECT distinct
+	ci.cst_gndr,
+	ca.gen,
+	CASE WHEN ci.cst_gndr != 'unknown' THEN ci.cst_gndr --CRM is the master of the gender info
+	ELSE COALESCE(ca.gen , 'unknown')-- COALESCE CHOOSES 'UNKNOWN' IF 'ca.gen' IS NULL
+END AS new_gen
+FROM silver.crm_cust_info ci
+LEFT JOIN silver.erp_cust_az12 ca
+ON  ci.cst_key = ca.cid
+LEFT JOIN silver.erp_loc_a101 la
+ON	ci.cst_key = la.cid
+ORDER BY 1,2 
+--checking for innacurate gender
+
+
+--SELECT COLUMN_NAME
+--FROM INFORMATION_SCHEMA.COLUMNS
+--WHERE TABLE_SCHEMA = 'silver'
+--  AND TABLE_NAME = 'crm_sales_details'
+--ORDER BY ORDINAL_POSITION;
+
+
+--foreign key Integrity (Dimensions)
+SELECT * 
+FROM gold.fact_sales f
+LEFT JOIN gold.dim_customers c
+ON c.customer_key = f.customer_key
+LEFT JOIN gold.dim_products p
+ON p.product_key = f.product_key
+WHERE c.customer_key IS NULL
+--WHERE p.product_key IS NULL
